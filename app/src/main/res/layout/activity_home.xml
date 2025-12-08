@@ -1,164 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FFFFFF">
+    android:padding="0dp"
+    android:background="#FDECEC">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Toolbar dengan ikon logout -->
+        <!-- HEADER MERAH -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:layout_marginBottom="8dp">
-
-            <ImageView
-                android:id="@+id/logoutIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/icon_logout"
-                android:contentDescription="Icon logout"
-                android:layout_marginEnd="8dp" />
-        </LinearLayout>
-
-        <!-- Judul Halaman -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="70dp"
             android:gravity="center"
-            android:text="Pantauan Kondisi"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <!-- Tanggal dan Waktu -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="Icon bell"
-                android:src="@drawable/notification" />
+            android:background="#BD1111">
 
             <TextView
-                android:id="@+id/tvDateTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Loading..."
-                android:textColor="#000000"
-                android:textSize="14sp" />
+                android:text="Pantauan Kondisi"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF" />
         </LinearLayout>
 
-        <!-- Status -->
+        <!-- BAGIAN DALAM -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/rounded_border"
             android:padding="16dp"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Status"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:textSize="16sp"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mengambil data..."
-                android:textColor="#FF0000"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Status Sensor -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/rounded_border"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Status Sensor"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:textSize="16sp"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Data Sensor -->
+            <!-- Tanggal dan Waktu -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <!-- Status Api -->
+                <ImageView
+                    android:layout_width="47dp"
+                    android:layout_height="43dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/calendar" />
+
+                <TextView
+                    android:id="@+id/tvDateTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:text="Loading..." />
+            </LinearLayout>
+
+            <!-- KARTU STATUS -->
+            <LinearLayout
+                android:id="@+id/cardStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/rounded_white"
+                android:padding="16dp"
+                android:elevation="4dp"
+                android:layout_marginBottom="16dp">
+
+                <!-- Ikon Status -->
+                <ImageView
+                    android:id="@+id/imgStatusIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/check_green"
+                    android:layout_marginEnd="12dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Loading..."
+                        android:textColor="#000000"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- KARTU STATUS SENSOR -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_white"
+                android:padding="16dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status Sensor"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#BD1111"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- API -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginBottom="10dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/logoapi2"
-                        android:contentDescription="Icon api" />
+                        android:src="@drawable/logoapi2" />
 
                     <TextView
                         android:id="@+id/tvApiStatus"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="Mengambil data..."
-                        android:textColor="#000000" />
+                        android:text="Menunggu data..."
+                        android:textColor="#000000"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
-                <!-- Suhu -->
+                <!-- SUHU -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginBottom="10dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/suhu"
-                        android:contentDescription="Icon suhu" />
+                        android:src="@drawable/suhu" />
 
                     <TextView
                         android:id="@+id/tvTemperature"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="Mengambil data..."
-                        android:textColor="#000000" />
+                        android:text="Menunggu data..."
+                        android:textColor="#000000"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
-                <!-- Gas Asap -->
+                <!-- GAS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -167,29 +169,35 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/asap"
-                        android:contentDescription="Icon gas asap" />
+                        android:src="@drawable/asap" />
 
                     <TextView
                         android:id="@+id/tvGasStatus"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="Mengambil data..."
-                        android:textColor="#000000" />
+                        android:text="Menunggu data..."
+                        android:textColor="#000000"
+                        android:textSize="14sp" />
                 </LinearLayout>
+
             </LinearLayout>
+
+            <!-- BUTTON HISTORY -->
+            <Button
+                android:id="@+id/btnNotificationHistory"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Riwayat Notifikasi"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#BD1111"
+                android:layout_marginTop="20dp"
+                android:drawableStart="@drawable/bell"
+                android:padding="10dp" />
+
         </LinearLayout>
 
-        <!-- Button Riwayat Notifikasi -->
-        <Button
-            android:id="@+id/btnNotificationHistory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Riwayat Notifikasi"
-            android:backgroundTint="#000000"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="16dp" />
-
     </LinearLayout>
+
 </ScrollView>

@@ -4,51 +4,103 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/rounded_border"
-    android:padding="16dp"
-    android:layout_marginBottom="8dp">
+    android:padding="8dp">
 
-    <!-- Waktu Notifikasi -->
-    <TextView
-        android:id="@+id/textViewTime"
-        android:layout_width="wrap_content"
+    <!-- CARD ITEM -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp"
-        android:text="Menunggu data..." />
+        android:background="@drawable/notif_card_white"
+        android:padding="12dp"
+        android:orientation="horizontal"
+        android:elevation="4dp">
 
-    <!-- Status Prediksi -->
-    <TextView
-        android:id="@+id/textViewStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp"
-        android:text="Menunggu data..." />
+        <!-- ICON + WAKTU + STATUS -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <!-- Informasi Data Api -->
-    <TextView
-        android:id="@+id/textViewApi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Menunggu data..." />
+            <!-- Baris icon + waktu -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-    <!-- Informasi Data Suhu -->
-    <TextView
-        android:id="@+id/textViewSuhu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Menunggu data..." />
+                <ImageView
+                    android:id="@+id/iconNotifikasi"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/bell_black" />
 
-    <!-- Informasi Data Gas Asap -->
-    <TextView
-        android:id="@+id/textViewAsap"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Menunggu data..." />
+                <TextView
+                    android:id="@+id/textViewTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Menunggu data..."
+                    android:textSize="14sp"
+                    android:textColor="#000000"/>
+            </LinearLayout>
+
+            <!-- Status -->
+            <TextView
+                android:id="@+id/textViewStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Menunggu data..."
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                android:textColor="#1A8F3A" />
+        </LinearLayout>
+
+        <!-- TANGGAL + DATA SENSOR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <!-- Tanggal -->
+            <TextView
+                android:id="@+id/textViewTanggal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Menunggu data..."
+                android:textSize="13sp"
+                android:textColor="#000000"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Data API -->
+            <TextView
+                android:id="@+id/textViewApi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Api : Menunggu data..."
+                android:textSize="13sp"
+                android:textColor="#000000"/>
+
+            <!-- Data Suhu -->
+            <TextView
+                android:id="@+id/textViewSuhu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Suhu : Menunggu data..."
+                android:textSize="13sp"
+                android:textColor="#000000"/>
+
+            <!-- Data Asap -->
+            <TextView
+                android:id="@+id/textViewAsap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Asap : Menunggu data..."
+                android:textSize="13sp"
+                android:textColor="#000000"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
