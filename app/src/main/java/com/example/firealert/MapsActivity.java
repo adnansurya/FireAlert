@@ -85,6 +85,10 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
         // 2. Inisialisasi Views dari Layout Kustom
         TextView textJudul = dialogView.findViewById(R.id.dialog_title);
         TextView textLabel = dialogView.findViewById(R.id.data_id_lokasi);
+        TextView textStatus = dialogView.findViewById(R.id.data_status_area);
+        TextView textApi = dialogView.findViewById(R.id.data_indikator_api);
+        TextView textSuhu = dialogView.findViewById(R.id.data_suhu);
+        TextView textLpg = dialogView.findViewById(R.id.data_gas_lpg);
         Button btnHapus = dialogView.findViewById(R.id.btn_hapus_marker);
         Button btnTutup = dialogView.findViewById(R.id.btn_tutup_dialog);
 
@@ -92,12 +96,36 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
         final String title = marker.getTitle() != null ? marker.getTitle() : "Tidak Ada Judul";
         final String label = marker.getSnippet() != null ? marker.getSnippet() : "Tidak Ada Keterangan";
 
+
         // 4. Isi Data ke Views
         textJudul.setText(title);
-        textLabel.setText("Label : " + label);
+        textLabel.setText(label);
 
         if(allSensorsData.containsKey(label)){
             Map<String, Object> sensorData = allSensorsData.get(label);
+
+            long flame = (long) sensorData.get("flame");
+            double lpg, suhu;
+
+            Object raw_lpg = sensorData.get("lpg");
+            if(raw_lpg instanceof Double){
+                lpg = (double) raw_lpg;
+            }else{
+                long long_lpg = (long) raw_lpg;
+                lpg = (double) long_lpg;
+            }
+
+            Object raw_suhu = sensorData.get("suhu");
+            if(raw_suhu instanceof Double){
+                suhu = (double) raw_suhu;
+            }else{
+                long long_suhu = (long) raw_suhu;
+                suhu = (double) long_suhu;
+            }
+
+            textApi.setText(String.valueOf(flame));
+            textSuhu.setText(String.valueOf(suhu));
+            textLpg.setText(String.valueOf(lpg));
 
 
         }
@@ -307,10 +335,6 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
                 // Tampilkan info window bawaan
                 showMarkerDetailsDialog(marker);
 
-                // Tampilkan Toast dengan keterangan
-                Toast.makeText(MapsActivity.this,
-                        marker.getSnippet(),
-                        Toast.LENGTH_LONG).show();
                 return true;
             }
         });
