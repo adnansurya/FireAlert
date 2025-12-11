@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Data Sensor Lokasi Kebakaran"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:textColor="@android:color/black"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="@color/white">
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="STATUS:" android:textStyle="bold" android:textColor="@android:color/black"/>
+        <TextView
+            android:id="@+id/data_status_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[Status Area Placeholder]"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp"/>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@android:color/darker_gray" android:layout_marginBottom="8dp"/>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Indikator Api:" android:textStyle="bold" android:textColor="@android:color/black"/>
+        <TextView
+            android:id="@+id/data_indikator_api"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[Api Placeholder]"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Suhu Udara:" android:textStyle="bold" android:textColor="@android:color/black"/>
+        <TextView
+            android:id="@+id/data_suhu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[Suhu Placeholder]"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Intensitas Gas LPG:" android:textStyle="bold" android:textColor="@android:color/black"/>
+        <TextView
+            android:id="@+id/data_gas_lpg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[Gas LPG Placeholder]"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/data_id_lokasi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[ID Lokasi Placeholder]"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btn_hapus_marker"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HAPUS MARKER"
+            android:textColor="@android:color/holo_red_dark"/>
+
+        <Button
+            android:id="@+id/btn_tutup_dialog"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="TUTUP"/>
+    </LinearLayout>
+
+</LinearLayout>

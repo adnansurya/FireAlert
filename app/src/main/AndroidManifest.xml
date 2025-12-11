@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -12,22 +13,22 @@
         android:roundIcon="@drawable/logo_apk"
         android:supportsRtl="true"
         android:theme="@style/Theme.FireAlert">
-
+        <activity
+            android:name=".MapsActivity"
+            android:exported="false" />
         <!-- SET HOME SEBAGAI HALAMAN UTAMA -->
         <activity
             android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- halaman riwayat notifikasi -->
+        </activity> <!-- halaman riwayat notifikasi -->
         <activity
             android:name=".NotificationHistoryActivity"
             android:exported="true" />
-
     </application>
 
 </manifest>
