@@ -1,5 +1,7 @@
 package com.example.firealert;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,25 +24,36 @@ import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -66,6 +78,8 @@ public class HomeActivity extends AppCompatActivity {
 
     Map<String, Object> sensorData;
     Map<String, Map<String, Object>> allSensorsData;
+    private static final String SERVER_TOKEN_URL = "https://script.google.com/macros/s/AKfycbwi0ct9Lu3vBCBLTbnTqfbBKftLg_lThyE5ypPakmjQOdKKDg01oSY4-B8jnEAD9nLN/exec";
+    private ExecutorService executorService; // Executor untuk background thread
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +90,8 @@ public class HomeActivity extends AppCompatActivity {
         Configuration.getInstance().load(getApplicationContext(),
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
         setContentView(R.layout.activity_home);
+
+
 
         tvDateTime = findViewById(R.id.tvDateTime);
         tvFlame = findViewById(R.id.tvApiStatus);
@@ -117,6 +133,9 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(HomeActivity.this, MapsActivity.class);
             startActivity(intent);
         });
+
+        executorService = Executors.newSingleThreadExecutor();
+        getFCMTokenDirectly();
     }
 
     // ==============================
@@ -132,6 +151,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    allSensorsData.clear();
                     for (DataSnapshot sensorSnapshot : dataSnapshot.getChildren()) {
                         String sensorKey = sensorSnapshot.getKey();
                         idHighlight = sensorKey;
@@ -353,4 +373,97 @@ public class HomeActivity extends AppCompatActivity {
         notifRef.child(key).child("asap").setValue(String.valueOf(lpg));
         notifRef.child(key).child("status").setValue(message);
     }
+
+    private void getFCMTokenDirectly() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Token didapatkan langsung dari FCM SDK
+                        String token = task.getResult();
+                        Log.d("TOKEN_DIRECT", "Token didapatkan langsung: " + token);
+                        Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
+
+                        // Lakukan pengiriman POST
+                        if (token != null) {
+                            performTokenPostRequest(token);
+                        }
+                    }
+                });
+    }
+    private void performTokenPostRequest(String token) {
+
+        // Kirim tugas ke background thread
+        executorService.execute(() -> {
+            HttpURLConnection urlConnection = null;
+            try {
+                // 1. Persiapan Data
+                JSONObject jsonBody = new JSONObject();
+                jsonBody.put("token", token);
+                jsonBody.put("comms", "cek");
+                String jsonInputString = jsonBody.toString();
+
+                // 2. Setup Koneksi
+                URL url = new URL(SERVER_TOKEN_URL);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
+                urlConnection.setRequestProperty("Accept", "application/json");
+                urlConnection.setDoOutput(true); // Mengizinkan output (body POST)
+
+                // 3. Menulis Body Data
+                try(OutputStream os = urlConnection.getOutputStream()) {
+                    byte[] input = jsonInputString.getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+
+                // 4. Menerima Respon
+                int responseCode = urlConnection.getResponseCode();
+
+                // Tambahkan logging respon server (Input Stream dari server)
+                String responseMessage = urlConnection.getResponseMessage();
+                Log.d("TOKEN_SEND_RESPONSE", "Response Code: " + responseCode + ", Message: " + responseMessage);
+
+                // Jika Anda ingin melihat BODY dari response server:
+
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(urlConnection.getInputStream(), "utf-8"))) {
+                    StringBuilder responseBody = new StringBuilder();
+                    String responseLine = null;
+                    while ((responseLine = br.readLine()) != null) {
+                        responseBody.append(responseLine.trim());
+                    }
+                    Log.d("TOKEN_SEND_RESPONSE_BODY", "Body: " + responseBody.toString());
+                }
+
+                // Masuk kembali ke Main Thread untuk update UI (Toast)
+                runOnUiThread(() -> {
+                    if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
+                        Log.i("TOKEN_SEND", "Token berhasil dikirim, Code: " + responseCode);
+                        Toast.makeText(this, "Token berhasil didaftarkan!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("TOKEN_SEND", "Gagal mengirim token, Code: " + responseCode);
+                        Toast.makeText(this, "Gagal mendaftarkan token (Code: " + responseCode + ").", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e("TOKEN_SEND", "Error koneksi: " + e.getMessage());
+                // Masuk kembali ke Main Thread untuk notifikasi error
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Error Jaringan: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+        });
+    }
+
 }

@@ -2,6 +2,8 @@ package com.example.firealert;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -42,6 +44,7 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
 
     Map<String, Object> sensorData;
     Map<String, Map<String, Object>> allSensorsData;
+    DatabaseReference sensorsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,10 +126,41 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
                 suhu = (double) long_suhu;
             }
 
-            textApi.setText(String.valueOf(flame));
-            textSuhu.setText(String.valueOf(suhu));
-            textLpg.setText(String.valueOf(lpg));
+            boolean fireAlarm = false;
+            boolean lpgAlarm = false;
+            boolean suhuAlarm = false;
 
+            if (flame == 1) {
+                fireAlarm = true;
+            } else fireAlarm = false;
+
+            // GAS
+            if (lpg >= 50.0) {
+                lpgAlarm = true;
+            } else lpgAlarm = false;
+
+            // SUHU
+            if (suhu >= 42.0) {
+                suhuAlarm = true;
+            } else suhuAlarm = false;
+
+            // ==============================
+            // UBAH STATUS + GANTI IKON
+            // ==============================
+            if (!fireAlarm && !suhuAlarm && !lpgAlarm) {
+                textStatus.setText("Kondisi Aman");
+                textStatus.setTextColor(Color.parseColor("#008F39"));
+//                imgStatusIcon.setImageResource(R.drawable.check_green);
+            } else {
+                textStatus.setText("Terjadi Kebakaran!");
+                textStatus.setTextColor(Color.parseColor("#BD1111"));
+//                imgStatusIcon.setImageResource(R.drawable.warning); // ⛔ WARNING ICON
+            }
+
+            // Update sekunder
+            textApi.setText(flame == 1 ? "Api Terdeteksi" : "Tidak Ada Api");
+            textLpg.setText(String.valueOf(lpg));
+            textSuhu.setText(suhu + " °C");
 
         }
 
@@ -181,6 +215,9 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
      */
     private void removeMarker(Marker marker) {
         if (map != null && marker != null) {
+            String sensorId = marker.getSnippet();
+            DatabaseReference deleteRef = sensorsRef.child(sensorId);
+            deleteRef.removeValue();
             map.getOverlays().remove(marker);
             map.invalidate();
             Toast.makeText(this, "Marker '" + marker.getTitle() + "' telah dihapus.", Toast.LENGTH_SHORT).show();
@@ -235,6 +272,7 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
                             // Panggil fungsi penambahan marker dengan data dari dialog
                             addNewSensor(title, label, p.getLongitude(), p.getLatitude());
                             addSingleMarker(p, title, label);
+                            map.getController().setCenter(p);
                             Toast.makeText(MapsActivity.this,
                                     "Marker '" + title + "' berhasil ditambahkan.",
                                     Toast.LENGTH_SHORT).show();
@@ -273,7 +311,7 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     private void fetchSensorData() {
-        DatabaseReference sensorsRef = FirebaseDatabase.getInstance()
+        sensorsRef = FirebaseDatabase.getInstance()
                 .getReference("sensors");
 
         allSensorsData = new HashMap<>();
@@ -344,6 +382,7 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
         map.invalidate(); // Refresh peta untuk menampilkan marker baru
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
@@ -363,4 +402,6 @@ public class MapsActivity extends AppCompatActivity implements MapEventsReceiver
             map.onPause();  // Menghentikan perenderan peta
         }
     }
+
+
 }
