@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -18,6 +20,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -52,8 +55,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             String title = name;
             String body = remoteMessage.getData().get("body");
             String label = remoteMessage.getData().get("label");
-            String latitudeStr = remoteMessage.getData().get("latitude");
-            String longitudeStr = remoteMessage.getData().get("longitude");
+            double lpg = Double.parseDouble(remoteMessage.getData().get("lpg"));
+            double suhu = Double.parseDouble(remoteMessage.getData().get("suhu"));
+            long api = Long.parseLong(remoteMessage.getData().get("api"));
 
             if (title == null || title.isEmpty()) {
                 title = "Peringatan Kebakaran Baru";
@@ -61,6 +65,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             if (body == null || body.isEmpty()) {
                 body = "Terdeteksi tidak aman. Tekan untuk melihat.";
             }
+
+            writeNotif(name, label, api, lpg, suhu);
 
             sendNotification(title, body, name, label);
 
@@ -100,40 +106,71 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
                         // TODO: Ganti R.drawable.ic_notification dengan ikon notifikasi Anda
-                        .setSmallIcon(R.drawable.icon_logout)
+                        .setSmallIcon(R.drawable.logo_apk)
                         .setContentTitle(title)
                         .setContentText(body)
                         .setAutoCancel(true) // Notifikasi hilang setelah diklik
                         .setContentIntent(pendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_HIGH); // Prioritas tinggi untuk peringatan
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Uri soundUri = Uri.parse(
+                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.alarmsound
+            );
+            notificationBuilder.setSound(soundUri);
+        }
+
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+
         // 4. Buat Channel Notifikasi (Wajib untuk Android O ke atas)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            Uri soundUri = Uri.parse(
+                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.alarmsound
+            );
+
+            // Definisikan Atribut Audio
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM) // Atau .USAGE_ALARM
+                    .build();
+
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_HIGH); // Penting agar muncul sebagai Heads-up
+            channel.setSound(soundUri, audioAttributes);
+            channel.enableVibration(true);
+
             notificationManager.createNotificationChannel(channel);
         }
 
         // 5. Tampilkan Notifikasi
-        notificationManager.notify(0 /* ID notifikasi unik */, notificationBuilder.build());
+        notificationManager.notify(new Random().nextInt() /* ID notifikasi unik */, notificationBuilder.build());
     }
 
     // Simpan riwayat ke Firebase
-    private void writeNotif(String message, long flame, double lpg, double suhu) {
+    private void writeNotif(String name, String label, long flame, double lpg, double suhu) {
         String currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy\nhh:mm:ss a",
                 Locale.getDefault()).format(new Date());
         DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifikasi");
         String key = notifRef.push().getKey();
 
         notifRef.child(key).child("time").setValue(currentDateTime);
-        notifRef.child(key).child("api").setValue(String.valueOf(flame));
+        notifRef.child(key).child("flame").setValue(String.valueOf(flame));
         notifRef.child(key).child("suhu").setValue(String.valueOf(suhu));
-        notifRef.child(key).child("asap").setValue(String.valueOf(lpg));
-        notifRef.child(key).child("status").setValue(message);
+        notifRef.child(key).child("lpg").setValue(String.valueOf(lpg));
+        notifRef.child(key).child("name").setValue(name);
+        notifRef.child(key).child("label").setValue(label);
+
+        DatabaseReference sensorRef = FirebaseDatabase.getInstance().getReference("sensors").child(label);
+
+        sensorRef.child("flame").setValue(flame);
+        sensorRef.child("suhu").setValue(suhu);
+        sensorRef.child("lpg").setValue(lpg);
+
+
     }
 
 }

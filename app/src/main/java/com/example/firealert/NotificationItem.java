@@ -1,35 +1,40 @@
 package com.example.firealert;
 
 public class NotificationItem {
-    public String time, status, api, suhu, asap;
+    public String time, name, label, flame, suhu, lpg;
 
     public NotificationItem(){}
 
-    public NotificationItem(String time, String status, String api, String suhu, String asap) {
+    public NotificationItem(String time, String name, String label, String flame, String suhu, String lpg) {
         this.time = time;
-        this.status = status;
-        this.api = api;
+        this.name = name;
+        this.label = label;
+        this.flame = flame;
         this.suhu = suhu;
-        this.asap = asap;
+        this.lpg = lpg;
     }
 
     public String getTime() {
         return time;
     }
 
-    public String getStatus() {
-        return status;
+    public String getName() {
+        return name;
     }
 
-    public String getApi() {
-        return api;
+    public String getLabel() {
+        return label;
+    }
+
+    public String getFlame() {
+        return flame;
     }
 
     public String getSuhu() {
         return suhu;
     }
 
-    public String getAsap() {
-        return asap;
+    public String getLpg() {
+        return lpg;
     }
 }

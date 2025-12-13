@@ -20,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
@@ -81,6 +83,11 @@ public class HomeActivity extends AppCompatActivity {
     private static final String SERVER_TOKEN_URL = "https://script.google.com/macros/s/AKfycbwi0ct9Lu3vBCBLTbnTqfbBKftLg_lThyE5ypPakmjQOdKKDg01oSY4-B8jnEAD9nLN/exec";
     private ExecutorService executorService; // Executor untuk background thread
 
+    // Kode untuk identifikasi permintaan izin notifikasi
+    private static final int POST_NOTIFICATIONS_REQUEST_CODE = 1001;
+
+    boolean intentBlocked = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +98,8 @@ public class HomeActivity extends AppCompatActivity {
         Configuration.getInstance().load(getApplicationContext(),
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
         setContentView(R.layout.activity_home);
+
+        requestNotificationPermission();
 
         allSensorsData = new HashMap<>();
 
@@ -109,7 +118,7 @@ public class HomeActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(true); // Tampilkan kontrol zoom
         map.setMultiTouchControls(true); // Aktifkan pinch-to-zoom
 
-        handleNotificationIntent(getIntent());
+
 
         updateTimeRunnable = () -> {
             currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy\nhh:mm:ss a",
@@ -139,10 +148,65 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(HomeActivity.this, MapsActivity.class);
             startActivity(intent);
         });
+        handleNotificationIntent(getIntent());
 
+    }
+
+    // MainActivity.java (lanjutan)
+
+    /**
+     * Memeriksa dan meminta izin POST_NOTIFICATIONS (Wajib untuk Android 13/API 33 ke atas).
+     */
+    private void requestNotificationPermission() {
+        // Izin POST_NOTIFICATIONS hanya ada di Android 13 (API 33) ke atas
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            // 1. Cek apakah izin sudah diberikan
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Izin belum diberikan, tampilkan dialog permintaan
+                Log.d("PERMISSION_CHECK", "Izin notifikasi belum diberikan, meminta izin...");
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        POST_NOTIFICATIONS_REQUEST_CODE
+                );
+
+            } else {
+                // Izin sudah diberikan
+                Log.d("PERMISSION_CHECK", "Izin notifikasi sudah diberikan.");
+                // Lanjutkan dengan operasi yang memerlukan notifikasi
+            }
+        } else {
+            // Versi Android di bawah 13, izin notifikasi dianggap sudah ada secara default
+            Log.d("PERMISSION_CHECK", "Android versi lama, izin notifikasi otomatis diberikan.");
+        }
         executorService = Executors.newSingleThreadExecutor();
         getFCMTokenDirectly();
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == POST_NOTIFICATIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Izin diberikan oleh user
+                Log.d("PERMISSION_RESULT", "Izin Notifikasi Diberikan!");
+                Toast.makeText(this, "Izin Notifikasi Diberikan.", Toast.LENGTH_SHORT).show();
+                // Lanjutkan operasi yang memerlukan notifikasi (misalnya inisialisasi FCM atau tampilkan UI yang relevan)
+
+            } else {
+                // Izin ditolak oleh user
+                Log.w("PERMISSION_RESULT", "Izin Notifikasi Ditolak!");
+                Toast.makeText(this, "Peringatan: Notifikasi mungkin tidak berfungsi.", Toast.LENGTH_LONG).show();
+
+                // Opsi: Anda bisa menunjukkan dialog penjelasan mengapa izin penting,
+                // terutama jika user menolak kedua kalinya (shouldShowRequestPermissionRationale)
+            }
+        }
     }
 
     // ==============================
@@ -177,15 +241,19 @@ public class HomeActivity extends AppCompatActivity {
 
                             // 3. Atur Posisi Awal dan Zoom
                             GeoPoint markerPoint = new GeoPoint(lat, lng);
-                            map.getController().setCenter(markerPoint);
+
 //
 //
                             addSingleMarker(markerPoint, title, label);
-                            setSensorDisplay(title, idHighlight);
+
+//                            if(intentBlocked){
+                                map.getController().setCenter(markerPoint);
+                                setSensorDisplay(title, idHighlight);
+//                            }
+
 
                         }
                     }
-
 
                 }
             }
@@ -194,6 +262,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
+
         });
     }
 
@@ -277,6 +346,7 @@ public class HomeActivity extends AppCompatActivity {
                 idHighlight = snippet;
 
                 setSensorDisplay(title,idHighlight);
+                intentBlocked = false;
 //
 //                // Tampilkan Toast dengan keterangan
 //                Toast.makeText(HomeActivity.this,
@@ -289,15 +359,6 @@ public class HomeActivity extends AppCompatActivity {
 
         map.getOverlays().add(newMarker);
         map.invalidate(); // Refresh peta untuk menampilkan marker baru
-    }
-
-    private int getNotificationId(String kondisi) {
-        switch (kondisi) {
-            case "suhu": return 1;
-            case "flame": return 2;
-            case "lpg": return 3;
-            default: return 0;
-        }
     }
 
     @Override
@@ -423,12 +484,14 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void handleNotificationIntent(Intent intent) {
+
         // Periksa apakah intent memiliki flag ACTION_GOTO_PLACE
         if (intent != null && intent.hasExtra("ACTION_GOTO_PLACE")) {
+            intentBlocked = true;
             boolean gotoPlace = intent.getBooleanExtra("ACTION_GOTO_PLACE", false);
             String label = intent.getStringExtra("LABEL");
             String name = intent.getStringExtra("NAME");
-            Toast.makeText(this, label + " " + name, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, label + " " + name, Toast.LENGTH_SHORT).show();
 
             if (gotoPlace && label != null && !label.isEmpty()) {
                 // Lakukan aksi navigasi ke tempat/koordinat
@@ -453,14 +516,13 @@ public class HomeActivity extends AppCompatActivity {
         Toast.makeText(this, "Navigasi ke: "+name+ "\n" + label, Toast.LENGTH_SHORT).show();
         idHighlight = label;
         setSensorDisplay(name, idHighlight);
-        Toast.makeText(this, "HIGHLIGHT : " + idHighlight, Toast.LENGTH_SHORT).show();
+        intentBlocked = false;
+//        Toast.makeText(this, "HIGHLIGHT : " + idHighlight, Toast.LENGTH_SHORT).show();
 
         if(allSensorsData.containsKey(idHighlight)) {
             Map<String, Object> sensorData = allSensorsData.get(idHighlight);
             double lat = (double) sensorData.get("lat");
             double lng = (double) sensorData.get("long");
-
-            Toast.makeText(this, "Lat: " + lat, Toast.LENGTH_SHORT).show();
 
             if (lat != 0 && lng != 0) {
                 GeoPoint sensorPoint = new GeoPoint(lat, lng);
@@ -469,11 +531,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
-
-
-        // Atau panggil method lain untuk memproses navigasi
-        // showPlaceOnMap(label);
-        // openPlaceDetails(label);
     }
 
     @Override

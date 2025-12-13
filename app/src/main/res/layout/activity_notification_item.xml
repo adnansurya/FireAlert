@@ -40,20 +40,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Menunggu data..."
-                    android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textSize="12sp"
+                    android:textColor="@color/black"/>
             </LinearLayout>
 
             <!-- Status -->
             <TextView
-                android:id="@+id/textViewStatus"
+                android:id="@+id/textViewLokasi"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Menunggu data..."
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:layout_marginTop="4dp"
-                android:textColor="#1A8F3A" />
+                android:textColor="@color/black" />
         </LinearLayout>
 
         <!-- TANGGAL + DATA SENSOR -->
@@ -65,12 +65,12 @@
 
             <!-- Tanggal -->
             <TextView
-                android:id="@+id/textViewTanggal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Menunggu data..."
+                android:text="Alarm Aktif"
                 android:textSize="13sp"
-                android:textColor="#000000"
+                android:textStyle="bold"
+                android:textColor="@color/red_main"
                 android:layout_marginBottom="6dp" />
 
             <!-- Data API -->
