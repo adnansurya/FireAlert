@@ -10,8 +10,14 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -42,8 +48,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(TAG, "Payload Data: " + remoteMessage.getData());
 
             // 1. Ambil data penting dari payload JSON
-            String title = remoteMessage.getData().get("title");
+            String name = remoteMessage.getData().get("name");
+            String title = name;
             String body = remoteMessage.getData().get("body");
+            String label = remoteMessage.getData().get("label");
             String latitudeStr = remoteMessage.getData().get("latitude");
             String longitudeStr = remoteMessage.getData().get("longitude");
 
@@ -51,26 +59,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 title = "Peringatan Kebakaran Baru";
             }
             if (body == null || body.isEmpty()) {
-                body = "Terdeteksi lokasi tidak aman. Tekan untuk melihat.";
+                body = "Terdeteksi tidak aman. Tekan untuk melihat.";
             }
 
-            // 2. Tampilkan Notifikasi di System Bar
-            if (latitudeStr != null && longitudeStr != null) {
-                try {
-                    double latitude = Double.parseDouble(latitudeStr);
-                    double longitude = Double.parseDouble(longitudeStr);
+            sendNotification(title, body, name, label);
 
-                    sendNotification(title, body, latitude, longitude);
 
-                } catch (NumberFormatException e) {
-                    Log.e(TAG, "Gagal mengurai koordinat: " + e.getMessage());
-                    // Tetap tampilkan notifikasi tanpa data koordinat jika parsing gagal
-                    sendNotification(title, body, 0.0, 0.0);
-                }
-            } else {
-                // Tampilkan notifikasi dasar jika koordinat tidak ada
-                sendNotification(title, body, 0.0, 0.0);
-            }
         }
     }
 
@@ -78,17 +72,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * Membuat dan menampilkan notifikasi di System Bar Android.
      * Intent notifikasi membawa koordinat untuk navigasi peta.
      */
-    private void sendNotification(String title, String body, double lat, double lon) {
+    private void sendNotification(String title, String body, String name, String label) {
 
         // 1. Setup Intent untuk MainActivity
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // Tambahkan data koordinat dan flag aksi khusus ke Intent
-        if (lat != 0.0 && lon != 0.0) {
-            intent.putExtra("ACTION_GOTO_POINT", true);
-            intent.putExtra("LATITUDE", lat);
-            intent.putExtra("LONGITUDE", lon);
+        if (!label.isEmpty()) {
+            intent.putExtra("ACTION_GOTO_PLACE", true);
+            intent.putExtra("LABEL", label);
+            intent.putExtra("NAME", name);
         }
 
         // 2. Buat PendingIntent
@@ -126,6 +120,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // 5. Tampilkan Notifikasi
         notificationManager.notify(0 /* ID notifikasi unik */, notificationBuilder.build());
+    }
+
+    // Simpan riwayat ke Firebase
+    private void writeNotif(String message, long flame, double lpg, double suhu) {
+        String currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy\nhh:mm:ss a",
+                Locale.getDefault()).format(new Date());
+        DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifikasi");
+        String key = notifRef.push().getKey();
+
+        notifRef.child(key).child("time").setValue(currentDateTime);
+        notifRef.child(key).child("api").setValue(String.valueOf(flame));
+        notifRef.child(key).child("suhu").setValue(String.valueOf(suhu));
+        notifRef.child(key).child("asap").setValue(String.valueOf(lpg));
+        notifRef.child(key).child("status").setValue(message);
     }
 
 }

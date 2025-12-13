@@ -81,6 +81,7 @@ public class HomeActivity extends AppCompatActivity {
     private static final String SERVER_TOKEN_URL = "https://script.google.com/macros/s/AKfycbwi0ct9Lu3vBCBLTbnTqfbBKftLg_lThyE5ypPakmjQOdKKDg01oSY4-B8jnEAD9nLN/exec";
     private ExecutorService executorService; // Executor untuk background thread
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +92,7 @@ public class HomeActivity extends AppCompatActivity {
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
         setContentView(R.layout.activity_home);
 
+        allSensorsData = new HashMap<>();
 
 
         tvDateTime = findViewById(R.id.tvDateTime);
@@ -107,6 +109,8 @@ public class HomeActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(true); // Tampilkan kontrol zoom
         map.setMultiTouchControls(true); // Aktifkan pinch-to-zoom
 
+        handleNotificationIntent(getIntent());
+
         updateTimeRunnable = () -> {
             currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy\nhh:mm:ss a",
                     Locale.getDefault()).format(new Date());
@@ -115,10 +119,12 @@ public class HomeActivity extends AppCompatActivity {
         };
         handler.post(updateTimeRunnable);
 
+
         GeoPoint startPoint = new GeoPoint(-4.01244, 119.62974);
         map.getController().setZoom(14.5);
         map.getController().setCenter(startPoint);
         tvLokasi.setText("Pare-Pare");
+
 
         fetchSensorData();
 
@@ -136,6 +142,7 @@ public class HomeActivity extends AppCompatActivity {
 
         executorService = Executors.newSingleThreadExecutor();
         getFCMTokenDirectly();
+
     }
 
     // ==============================
@@ -145,15 +152,14 @@ public class HomeActivity extends AppCompatActivity {
         DatabaseReference sensorsRef = FirebaseDatabase.getInstance()
                 .getReference("sensors");
 
-        allSensorsData = new HashMap<>();
-
         sensorsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    allSensorsData.clear();
+//                    allSensorsData.clear();
                     for (DataSnapshot sensorSnapshot : dataSnapshot.getChildren()) {
                         String sensorKey = sensorSnapshot.getKey();
+
                         idHighlight = sensorKey;
 
                         sensorData =
@@ -172,8 +178,8 @@ public class HomeActivity extends AppCompatActivity {
                             // 3. Atur Posisi Awal dan Zoom
                             GeoPoint markerPoint = new GeoPoint(lat, lng);
                             map.getController().setCenter(markerPoint);
-
-
+//
+//
                             addSingleMarker(markerPoint, title, label);
                             setSensorDisplay(title, idHighlight);
 
@@ -193,28 +199,16 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setViewDetails(long flame, double lpg, double suhu){
         if (flame == 1) {
-            if (!fireAlarm) {
-                Notifikasi(HomeActivity.this, "Terjadi Kebakaran!", "Api Terdeteksi", "flame");
-                writeNotif("Api Terdeteksi", flame, lpg, suhu);
-            }
             fireAlarm = true;
         } else fireAlarm = false;
 
         // GAS
         if (lpg >= 50.0) {
-            if (!lpgAlarm) {
-                Notifikasi(HomeActivity.this, "Terjadi Kebakaran!", "Kadar Gas Melebihi Batas", "lpg");
-                writeNotif("Kadar Gas Melebihi Batas", flame, lpg, suhu);
-            }
             lpgAlarm = true;
         } else lpgAlarm = false;
 
         // SUHU
         if (suhu >= 42.0) {
-            if (!suhuAlarm) {
-                Notifikasi(HomeActivity.this, "Terjadi Kebakaran!", "Suhu Melebihi Batas", "suhu");
-                writeNotif("Suhu Melebihi Batas", flame, lpg, suhu);
-            }
             suhuAlarm = true;
         } else suhuAlarm = false;
 
@@ -236,34 +230,6 @@ public class HomeActivity extends AppCompatActivity {
         tvLpg.setText("LPG: " + lpg);
         tvSuhu.setText("Suhu: " + suhu + " °C");
     }
-
-    // ==============================
-    // NOTIFIKASI
-    // ==============================
-    public void Notifikasi(Context context, String title, String content, String kondisi) {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(content)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel =
-                    new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
-            builder.setChannelId(CHANNEL_ID);
-        }
-
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) return;
-
-        notificationManager.notify(getNotificationId(kondisi), builder.build());
-    }
-
 
     private void setSensorDisplay(String stringTitle, String stringId){
         tvLokasi.setText(stringTitle);
@@ -289,10 +255,8 @@ public class HomeActivity extends AppCompatActivity {
                 suhu = (double) long_suhu;
             }
 
-
-
-
             setViewDetails(flame, lpg, suhu);
+
         }
     }
 
@@ -313,11 +277,11 @@ public class HomeActivity extends AppCompatActivity {
                 idHighlight = snippet;
 
                 setSensorDisplay(title,idHighlight);
-
-                // Tampilkan Toast dengan keterangan
-                Toast.makeText(HomeActivity.this,
-                        marker.getTitle(),
-                        Toast.LENGTH_LONG).show();
+//
+//                // Tampilkan Toast dengan keterangan
+//                Toast.makeText(HomeActivity.this,
+//                        marker.getTitle(),
+//                        Toast.LENGTH_LONG).show();
                 return true;
             }
         });
@@ -339,6 +303,10 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+
+        if (getIntent() != null && getIntent().hasExtra("ACTION_GOTO_PLACE")) {
+            handleNotificationIntent(getIntent());
+        }
         // Konfigurasi diperlukan lagi di onResume untuk memuat tile sources
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         if (map != null) {
@@ -362,18 +330,6 @@ public class HomeActivity extends AppCompatActivity {
         handler.removeCallbacks(updateTimeRunnable);
     }
 
-    // Simpan riwayat ke Firebase
-    private void writeNotif(String message, long flame, double lpg, double suhu) {
-        DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifikasi");
-        String key = notifRef.push().getKey();
-
-        notifRef.child(key).child("time").setValue(currentDateTime);
-        notifRef.child(key).child("api").setValue(String.valueOf(flame));
-        notifRef.child(key).child("suhu").setValue(String.valueOf(suhu));
-        notifRef.child(key).child("asap").setValue(String.valueOf(lpg));
-        notifRef.child(key).child("status").setValue(message);
-    }
-
     private void getFCMTokenDirectly() {
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(new OnCompleteListener<String>() {
@@ -387,7 +343,7 @@ public class HomeActivity extends AppCompatActivity {
                         // Token didapatkan langsung dari FCM SDK
                         String token = task.getResult();
                         Log.d("TOKEN_DIRECT", "Token didapatkan langsung: " + token);
-                        Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
 
                         // Lakukan pengiriman POST
                         if (token != null) {
@@ -445,7 +401,7 @@ public class HomeActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
                         Log.i("TOKEN_SEND", "Token berhasil dikirim, Code: " + responseCode);
-                        Toast.makeText(this, "Token berhasil didaftarkan!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(this, "Token berhasil didaftarkan!", Toast.LENGTH_SHORT).show();
                     } else {
                         Log.e("TOKEN_SEND", "Gagal mengirim token, Code: " + responseCode);
                         Toast.makeText(this, "Gagal mendaftarkan token (Code: " + responseCode + ").", Toast.LENGTH_SHORT).show();
@@ -464,6 +420,68 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void handleNotificationIntent(Intent intent) {
+        // Periksa apakah intent memiliki flag ACTION_GOTO_PLACE
+        if (intent != null && intent.hasExtra("ACTION_GOTO_PLACE")) {
+            boolean gotoPlace = intent.getBooleanExtra("ACTION_GOTO_PLACE", false);
+            String label = intent.getStringExtra("LABEL");
+            String name = intent.getStringExtra("NAME");
+            Toast.makeText(this, label + " " + name, Toast.LENGTH_SHORT).show();
+
+            if (gotoPlace && label != null && !label.isEmpty()) {
+                // Lakukan aksi navigasi ke tempat/koordinat
+
+                // Opsional: Hapus flag setelah diproses
+                intent.removeExtra("ACTION_GOTO_PLACE");
+                intent.removeExtra("LABEL");
+                intent.removeExtra("NAME");
+
+                navigateToPlace(name, label);
+
+
+            }
+        }
+    }
+
+    private void navigateToPlace(String name, String label) {
+        // Implementasi navigasi ke tempat berdasarkan label
+        // Misalnya: tampilkan di map, buka detail, dll.
+
+        // Contoh: Tampilkan toast atau dialog
+        Toast.makeText(this, "Navigasi ke: "+name+ "\n" + label, Toast.LENGTH_SHORT).show();
+        idHighlight = label;
+        setSensorDisplay(name, idHighlight);
+        Toast.makeText(this, "HIGHLIGHT : " + idHighlight, Toast.LENGTH_SHORT).show();
+
+        if(allSensorsData.containsKey(idHighlight)) {
+            Map<String, Object> sensorData = allSensorsData.get(idHighlight);
+            double lat = (double) sensorData.get("lat");
+            double lng = (double) sensorData.get("long");
+
+            Toast.makeText(this, "Lat: " + lat, Toast.LENGTH_SHORT).show();
+
+            if (lat != 0 && lng != 0) {
+                GeoPoint sensorPoint = new GeoPoint(lat, lng);
+                map.getController().setCenter(sensorPoint);
+                map.getController().setZoom(17);
+            }
+        }
+
+
+
+        // Atau panggil method lain untuk memproses navigasi
+        // showPlaceOnMap(label);
+        // openPlaceDetails(label);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Tangkap intent saat activity sudah berjalan
+        setIntent(intent);
+        handleNotificationIntent(intent);
     }
 
 }
