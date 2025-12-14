@@ -115,7 +115,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Uri soundUri = Uri.parse(
-                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.alarmsound
+                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.fire_alarm
             );
             notificationBuilder.setSound(soundUri);
         }
@@ -128,7 +128,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             Uri soundUri = Uri.parse(
-                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.alarmsound
+                    "android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.fire_alarm
             );
 
             // Definisikan Atribut Audio

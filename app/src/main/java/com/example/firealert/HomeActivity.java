@@ -517,7 +517,7 @@ public class HomeActivity extends AppCompatActivity {
         Log.d("AllSensor",String.valueOf(allSensorsData));
 
         // Contoh: Tampilkan toast atau dialog
-        Toast.makeText(this, "Navigasi ke: "+name , Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Navigasi ke: "+name , Toast.LENGTH_SHORT).show();
 //        idHighlight = label;
         setSensorDisplay(name, label);
 //        intentBlocked = false;
