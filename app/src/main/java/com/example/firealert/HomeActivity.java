@@ -216,54 +216,62 @@ public class HomeActivity extends AppCompatActivity {
         DatabaseReference sensorsRef = FirebaseDatabase.getInstance()
                 .getReference("sensors");
 
-        sensorsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
+
+            sensorsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
 //                    allSensorsData.clear();
-                    for (DataSnapshot sensorSnapshot : dataSnapshot.getChildren()) {
-                        String sensorKey = sensorSnapshot.getKey();
+                        for (DataSnapshot sensorSnapshot : dataSnapshot.getChildren()) {
+                            String sensorKey = sensorSnapshot.getKey();
 
-                        idHighlight = sensorKey;
+                            idHighlight = sensorKey;
 
-                        sensorData =
-                                (Map<String, Object>) sensorSnapshot.getValue();
+                            sensorData =
+                                    (Map<String, Object>) sensorSnapshot.getValue();
 
 
-                        if (sensorKey != null && sensorData != null) {
+                            if (sensorKey != null && sensorData != null) {
 
-                            allSensorsData.put(sensorKey, sensorData);
+                                allSensorsData.put(sensorKey, sensorData);
 
-                            double lng = sensorSnapshot.child("long").getValue(Double.class);
-                            double lat = sensorSnapshot.child("lat").getValue(Double.class);
-                            String title = sensorSnapshot.child("title").getValue(String.class);
-                            String label = sensorSnapshot.child("label").getValue(String.class);
+                                double lng = sensorSnapshot.child("long").getValue(Double.class);
+                                double lat = sensorSnapshot.child("lat").getValue(Double.class);
+                                String title = sensorSnapshot.child("title").getValue(String.class);
+                                String label = sensorSnapshot.child("label").getValue(String.class);
 
-                            // 3. Atur Posisi Awal dan Zoom
-                            GeoPoint markerPoint = new GeoPoint(lat, lng);
+                                // 3. Atur Posisi Awal dan Zoom
+                                GeoPoint markerPoint = new GeoPoint(lat, lng);
 
 //
 //
-                            addSingleMarker(markerPoint, title, label);
+                                addSingleMarker(markerPoint, title, label);
 
-//                            if(intentBlocked){
+                            if(!intentBlocked){
                                 map.getController().setCenter(markerPoint);
                                 setSensorDisplay(title, idHighlight);
-//                            }
+                            }
 
 
+                            }
                         }
+//                        Toast.makeText(HomeActivity.this, "ALLSENSOR", Toast.LENGTH_SHORT).show();
+                        Log.d("AllSensor",String.valueOf(allSensorsData));
+                        if(intentBlocked){
+                            handleNotificationIntent(getIntent());
+                        }
+
                     }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            });
 
-            }
 
-        });
     }
 
     private void setViewDetails(long flame, double lpg, double suhu){
@@ -496,27 +504,23 @@ public class HomeActivity extends AppCompatActivity {
             if (gotoPlace && label != null && !label.isEmpty()) {
                 // Lakukan aksi navigasi ke tempat/koordinat
 
-                // Opsional: Hapus flag setelah diproses
-                intent.removeExtra("ACTION_GOTO_PLACE");
-                intent.removeExtra("LABEL");
-                intent.removeExtra("NAME");
-
-                navigateToPlace(name, label);
-
-
+                navigateToPlace(intent, name, label);
             }
         }
     }
 
-    private void navigateToPlace(String name, String label) {
+    private void navigateToPlace(Intent intent, String name, String label) {
+
         // Implementasi navigasi ke tempat berdasarkan label
         // Misalnya: tampilkan di map, buka detail, dll.
+//        Toast.makeText(HomeActivity.this, "ALLSENSOR", Toast.LENGTH_SHORT).show();
+        Log.d("AllSensor",String.valueOf(allSensorsData));
 
         // Contoh: Tampilkan toast atau dialog
-        Toast.makeText(this, "Navigasi ke: "+name+ "\n" + label, Toast.LENGTH_SHORT).show();
-        idHighlight = label;
-        setSensorDisplay(name, idHighlight);
-        intentBlocked = false;
+        Toast.makeText(this, "Navigasi ke: "+name , Toast.LENGTH_SHORT).show();
+//        idHighlight = label;
+        setSensorDisplay(name, label);
+//        intentBlocked = false;
 //        Toast.makeText(this, "HIGHLIGHT : " + idHighlight, Toast.LENGTH_SHORT).show();
 
         if(allSensorsData.containsKey(idHighlight)) {
@@ -528,6 +532,13 @@ public class HomeActivity extends AppCompatActivity {
                 GeoPoint sensorPoint = new GeoPoint(lat, lng);
                 map.getController().setCenter(sensorPoint);
                 map.getController().setZoom(17);
+
+                // Opsional: Hapus flag setelah diproses
+                intent.removeExtra("ACTION_GOTO_PLACE");
+                intent.removeExtra("LABEL");
+                intent.removeExtra("NAME");
+
+                intentBlocked = false;
             }
         }
 

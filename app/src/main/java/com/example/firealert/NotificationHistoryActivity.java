@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class NotificationHistoryActivity extends AppCompatActivity {
@@ -66,6 +67,8 @@ public class NotificationHistoryActivity extends AppCompatActivity {
                         notificationList.add(item);
                     }
                 }
+
+                Collections.reverse(notificationList);
 
                 notifAdapter.notifyDataSetChanged();
             }
