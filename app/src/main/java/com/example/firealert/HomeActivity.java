@@ -249,7 +249,7 @@ public class HomeActivity extends AppCompatActivity {
 
                             if(!intentBlocked){
                                 map.getController().setCenter(markerPoint);
-                                setSensorDisplay(title, idHighlight);
+                                setSensorDisplay(title, sensorKey);
                             }
 
 
@@ -311,7 +311,7 @@ public class HomeActivity extends AppCompatActivity {
     private void setSensorDisplay(String stringTitle, String stringId){
         tvLokasi.setText(stringTitle);
         if(allSensorsData.containsKey(stringId)){
-            Map<String, Object> sensorData = allSensorsData.get(idHighlight);
+            Map<String, Object> sensorData = allSensorsData.get(stringId);
 
             long flame = (long) sensorData.get("flame");
             double lpg, suhu;
@@ -351,9 +351,9 @@ public class HomeActivity extends AppCompatActivity {
 //                marker.showInfoWindow();
 
                 map.getController().setCenter(point);
-                idHighlight = snippet;
+//                idHighlight = snippet;
 
-                setSensorDisplay(title,idHighlight);
+                setSensorDisplay(title,snippet);
                 intentBlocked = false;
 //
 //                // Tampilkan Toast dengan keterangan
@@ -514,17 +514,18 @@ public class HomeActivity extends AppCompatActivity {
         // Implementasi navigasi ke tempat berdasarkan label
         // Misalnya: tampilkan di map, buka detail, dll.
 //        Toast.makeText(HomeActivity.this, "ALLSENSOR", Toast.LENGTH_SHORT).show();
-        Log.d("AllSensor",String.valueOf(allSensorsData));
+        Log.d("AllSensorNav",String.valueOf(allSensorsData));
 
         // Contoh: Tampilkan toast atau dialog
 //        Toast.makeText(this, "Navigasi ke: "+name , Toast.LENGTH_SHORT).show();
 //        idHighlight = label;
-        setSensorDisplay(name, label);
+
 //        intentBlocked = false;
 //        Toast.makeText(this, "HIGHLIGHT : " + idHighlight, Toast.LENGTH_SHORT).show();
 
-        if(allSensorsData.containsKey(idHighlight)) {
-            Map<String, Object> sensorData = allSensorsData.get(idHighlight);
+        if(allSensorsData.containsKey(label)) {
+            Toast.makeText(this, "loaded", Toast.LENGTH_SHORT).show();
+            Map<String, Object> sensorData = allSensorsData.get(label);
             double lat = (double) sensorData.get("lat");
             double lng = (double) sensorData.get("long");
 
@@ -538,7 +539,9 @@ public class HomeActivity extends AppCompatActivity {
                 intent.removeExtra("LABEL");
                 intent.removeExtra("NAME");
 
-                intentBlocked = false;
+                setSensorDisplay(name, label);
+
+//                intentBlocked = false;
             }
         }
 
